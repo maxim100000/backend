@@ -25,6 +25,7 @@ def upgrade() -> None:
     op.create_table('prophecy',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('content', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+    sa.Column('used', sa.Boolean, nullable=False, default=False),
     sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###
