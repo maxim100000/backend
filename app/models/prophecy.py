@@ -1,9 +1,10 @@
 from sqlmodel import SQLModel, Field
 
 
-class Prophecy(SQLModel, table=True):
-    id: int = Field(primary_key=True)
+class ProphecyBase(SQLModel):
     content: str
-    used: bool
-    
-    
+    used: bool = False
+
+
+class Prophecy(ProphecyBase, table=True):
+    id: int | None = Field(default=None, primary_key=True)
