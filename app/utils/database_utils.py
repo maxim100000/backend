@@ -1,10 +1,10 @@
 import sqlite3
-import random
 
-def random_from_count() -> int:
+
+def get_all():
     db = sqlite3.connect("app/utils/database.db")
     cursor = db.cursor()
-    count = cursor.execute("SELECT count(*) FROM prophecy").fetchone()[0]
-    return random.randint(1, count) if count > 0 else 0 
-
-
+    entity = cursor.execute("SELECT * FROM prophecy").fetchall()
+    for i in entity:
+        yield i[1]
+    

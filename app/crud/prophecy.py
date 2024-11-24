@@ -1,9 +1,10 @@
-from starlette import status
-from fastapi import Response
+from fastapi import Response, status
+from sqlmodel import select, func
 
 from app.models.prophecy import Prophecy, ProphecyBase
 from app.dependencies.sql_session import Session
-from sqlmodel import select, func
+from app.utils.check_unique import check_similarity
+from app.utils.database_utils import get_all
 
 
 def get_prophecy(session: Session, response: Response):
@@ -18,29 +19,37 @@ def get_prophecy(session: Session, response: Response):
         return prophecy
     else:
         response.status_code = status.HTTP_404_NOT_FOUND
-        return {"message": "Prophecy not found"}
+        return {"message": "New prophecy not found"}
 
 
-def post_prophecy(session: Session, prophecy: Prophecy):
-    prophecy = Prophecy.model_validate(prophecy)
+def post_prophecy(session: Session, prophecy: Prophecy, response: Response):
     try:
-        session.add(prophecy)
-        session.commit()
+        for item in get_all():
+            if check_similarity(prophecy.content, item):
+                return {"message":"Цитата слишком похожа на одну из имеющихся"}
     except Exception:
-        raise Exception("Something went wrong")
+        response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+        return {"message": "Сервер недоступен"}
     else:
-        session.refresh(prophecy)
-        return prophecy
+        prophecy = Prophecy.model_validate(prophecy)
+        try:
+            session.add(prophecy)
+            session.commit()
+        except Exception:
+            return {"message":"Something went wrong"}
+        else:
+            session.refresh(prophecy)
+            return prophecy
 
 
 def delete_prophecy(session: Session, id: int, response: Response):
-    prophecy = session.get(Prophecy, id)
-    if not prophecy:
+    db_prophecy = session.get(Prophecy, id)
+    if not db_prophecy:
         response.status_code = status.HTTP_404_NOT_FOUND
         return {"message": "Prophecy not found"}
-    session.delete(prophecy)
+    session.delete(db_prophecy)
     session.commit()
-    return {"deleted": True}
+    return {"message": "deleted"}
 
 
 def update_prophecy(session: Session, id: int, prophecy: ProphecyBase,
@@ -54,4 +63,4 @@ def update_prophecy(session: Session, id: int, prophecy: ProphecyBase,
         session.add(db_prophecy)
         session.commit()
         session.refresh(db_prophecy)
-        return db_prophecy
+        return {"message": "updated"}
