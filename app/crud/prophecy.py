@@ -4,7 +4,6 @@ from sqlmodel import select, func
 from app.models.prophecy import Prophecy, ProphecyBase
 from app.dependencies.sql_session import Session
 from app.utils.check_unique import check_similarity
-from app.utils.database_utils import get_all
 
 
 def get_prophecy(session: Session, response: Response):
@@ -24,22 +23,22 @@ def get_prophecy(session: Session, response: Response):
 
 def post_prophecy(session: Session, prophecy: Prophecy, response: Response):
     try:
-        for item in get_all():
-            if check_similarity(prophecy.content, item):
+        for item in session.exec(select(Prophecy)).fetchall():
+            if check_similarity(prophecy.content, item.content):
                 return {"message":"Цитата слишком похожа на одну из имеющихся"}
+    except:
+        pass
+
+    prophecy = Prophecy.model_validate(prophecy)
+    try:
+        session.add(prophecy)
+        session.commit()
     except Exception:
-        response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
-        return {"message": "Сервер недоступен"}
+        response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        return {"message":"Server error"}
     else:
-        prophecy = Prophecy.model_validate(prophecy)
-        try:
-            session.add(prophecy)
-            session.commit()
-        except Exception:
-            return {"message":"Something went wrong"}
-        else:
-            session.refresh(prophecy)
-            return prophecy
+        session.refresh(prophecy)
+        return prophecy
 
 
 def delete_prophecy(session: Session, id: int, response: Response):
