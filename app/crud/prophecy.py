@@ -22,10 +22,14 @@ def get_prophecy(session: Session, response: Response):
 
 
 def post_prophecy(session: Session, prophecy: Prophecy, response: Response):
+    if prophecy.content == "" or len(prophecy.content) < 15 or len(
+            prophecy.content) > 350:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return {"message": "Bad request. Content must be between 15 and 350 symbols"}
     try:
         for item in session.exec(select(Prophecy)).fetchall():
             if check_similarity(prophecy.content, item.content):
-                return {"message":"Цитата слишком похожа на одну из имеющихся"}
+                return {"message": "Цитата слишком похожа на одну из имеющихся"}
     except:
         pass
 
@@ -33,9 +37,9 @@ def post_prophecy(session: Session, prophecy: Prophecy, response: Response):
     try:
         session.add(prophecy)
         session.commit()
-    except Exception:
+    except:
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-        return {"message":"Server error"}
+        return {"message": "Server error"}
     else:
         session.refresh(prophecy)
         return prophecy
@@ -53,6 +57,10 @@ def delete_prophecy(session: Session, id: int, response: Response):
 
 def update_prophecy(session: Session, id: int, prophecy: ProphecyBase,
                     response: Response):
+    if prophecy.content == "" or len(prophecy.content) < 15 or len(
+            prophecy.content) > 350:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return  {"message": "Bad request. Content must be between 15 and 350 symbols"}
     db_prophecy = session.get(Prophecy, id)
     if not db_prophecy:
         response.status_code = status.HTTP_404_NOT_FOUND

@@ -22,11 +22,11 @@ def test_post_prophecy():
     app.dependency_overrides[get_session] = get_test_session
     
     response = client.post("/api/prophecy",
-                           json={"content": "description"},
+                           json={"content": "Возми себя в руки"},
                            headers={"Authorization": "Basic YWRtaW46YWRtaW4="}
                            )
-    assert response.status_code == 200
     print(response.json())
+    assert response.status_code == 200
     
     app.dependency_overrides = {}
 
@@ -47,7 +47,7 @@ def test_delete_prophecy():
   
     response = client.delete("/api/prophecy",
                           headers={"Authorization": "Basic YWRtaW46YWRtaW4="},
-                          params={"id": 1}
+                          params={"id": 3}
                           )
     assert response.status_code == 200
     print(response.json())
@@ -63,8 +63,8 @@ def test_update_prophecy():
                           json={"content": "вызов"},
                           params={"id": 1}
                           )
-    assert response.status_code == 200
     print(response.json())
+    assert response.status_code == 200
     
     app.dependency_overrides = {}
         
