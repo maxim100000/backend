@@ -23,7 +23,7 @@ def get_prophecy(session: Session, response: Response):
 
 def post_prophecy(session: Session, prophecy: Prophecy, response: Response):
     if prophecy.content == "" or len(prophecy.content) < 15 or len(
-            prophecy.content) > 350:
+            prophecy.content) > 500:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return {"message": "Bad request. Content must be between 15 and 350 symbols"}
     try:
@@ -71,3 +71,14 @@ def update_prophecy(session: Session, id: int, prophecy: ProphecyBase,
         session.commit()
         session.refresh(db_prophecy)
         return {"message": "updated"}
+
+
+def update_status(session: Session, id: int, response: Response):
+    db_prophecy = session.get(Prophecy, id)
+    if not db_prophecy:
+        response.status_code = status.HTTP_404_NOT_FOUND
+        return {"message": "Prophecy not found"}
+    else:
+        db_prophecy.used = False
+        session.add(db_prophecy)
+        session.commit()

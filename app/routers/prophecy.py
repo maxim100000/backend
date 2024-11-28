@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Response, status
 
 from app.models.prophecy import ProphecyBase, Prophecy
 from app.crud.prophecy import get_prophecy, post_prophecy, delete_prophecy, \
-    update_prophecy
+    update_prophecy, update_status
 from app.dependencies.sql_session import get_session, Session
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
@@ -34,7 +34,7 @@ async def post(session: Annotated[Session, Depends(get_session)],
 
 
 @router.patch("/api/prophecy", response_model=ProphecyBase | dict)
-async def update(session: Annotated[Session, Depends(get_session)], id: int,
+async def update_content(session: Annotated[Session, Depends(get_session)], id: int,
                  prophecy: ProphecyBase, response: Response,
                  credentials: Annotated[HTTPBasicCredentials, Depends(security)],
                  ):
@@ -45,7 +45,12 @@ async def update(session: Annotated[Session, Depends(get_session)], id: int,
                            response=response)
 
 
-@router.delete("/api/prophecy", response_model=ProphecyBase | dict)
+@router.patch("/api/prophecy/{id}")
+async def update_used(session: Annotated[Session, Depends(get_session)], id: int, response: Response,):
+    return update_status(session=session, id=id, response=response)
+
+
+@router.delete("/api/prophecy/{id}", response_model=ProphecyBase | dict)
 async def delete(session: Annotated[Session, Depends(get_session)], id: int,
                  response: Response, 
                  credentials: Annotated[HTTPBasicCredentials, Depends(security)],
