@@ -23,7 +23,7 @@ def get_prophecy(session: Session, response: Response):
 
 def post_prophecy(session: Session, prophecy: Prophecy, response: Response):
     if prophecy.content == "" or len(prophecy.content) < 15 or len(
-            prophecy.content) > 500:
+            prophecy.content) > 1500:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return {"message": "Bad request. Content must be between 15 and 350 symbols"}
     try:
@@ -31,7 +31,8 @@ def post_prophecy(session: Session, prophecy: Prophecy, response: Response):
             if check_similarity(prophecy.content, item.content):
                 return {"message": "Цитата слишком похожа на одну из имеющихся"}
     except:
-        pass
+        response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+        return {"message": "Service anavailable"}
 
     prophecy = Prophecy.model_validate(prophecy)
     try:
