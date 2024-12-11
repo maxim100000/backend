@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, Response, status
 
@@ -23,7 +23,7 @@ async def get(session: Annotated[Session, Depends(get_session)],
     return get_prophecy(session=session, response=response)
 
 
-@router.get("/api/prophecy/all", response_model=list[ProphecyBase])
+@router.get("/api/prophecy/all")
 async def get_all(session: Annotated[Session, Depends(get_session)],
                   credentials: Annotated[HTTPBasicCredentials, Depends(security)],
                   response: Response):
